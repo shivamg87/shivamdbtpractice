@@ -24,7 +24,7 @@ steps:
     echo "##vso[task.setvariable variable=BUILD_BRANCH]$build_branch"
   displayName: Setting build environment variables
 
-- task: ms-devlabs.utilitytasks.task-Shellpp.Shell++@0
+- task: ms-devlabs.utilitytasks.task-Shellpp.Shell++@0.1.11
   displayName: Run and test dbt
   inputs:
     type: FilePath
