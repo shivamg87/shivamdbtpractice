@@ -1,0 +1,38 @@
+- phase: dbt
+ 
+  queue:
+    name: CustomPool
+    demands: sh
+ 
+  steps:
+    - task: DownloadSecureFile@1
+      name: SettingProfile
+      displayName: Downloading Profile for Databricks
+      inputs:
+        secureFile: 'databricks-profiles.yml'
+    
+    - script: |
+        echo Installing $(SettingProfile.secureFilePath) to the ~/.dbt...
+        mkdir ~/.dbt
+        cp $(SettingProfile.secureFilePath) ~/.dbt/profiles.yml
+      displayName: Installing Profile for Databricks
+ 
+    - script: |
+        build_branch=$(Build.SourceBranchName)
+        pr_number=$(System.PullRequest.PullRequestId)
+        echo "##vso[task.setvariable variable=PR_NUMBER]$pr_number"
+        echo "##vso[task.setvariable variable=BUILD_BRANCH]$build_branch"
+      displayName: Setting build environment variables
+ 
+    - task: ms-devlabs.utilitytasks.task-Shellpp.Shell++@0
+      displayName: Run and test dbt
+      inputs:
+        type: FilePath
+        failOnStandardError: false
+        scriptPath: scripts/dbt-build.sh
+    
+    - task: PublishBuildArtifacts@1
+      displayName: Publish artifact - dbt
+      inputs:
+        pathToPublish: our-datamart
+        ArtifactName: our-datamart
